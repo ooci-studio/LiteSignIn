@@ -38,7 +38,7 @@ public class GUICommand
             SignInDate target = SignInDate.getInstance(new Date());
             if (args.length == 1) {
                 Menu.openGUI(player);
-                MessageUtil.sendCommandMessage(player, "GUI.Normal");
+//                MessageUtil.sendCommandMessage(player, "GUI.Normal");
             } else if (args.length == 2) {
                 if (SignInPluginUtils.hasCommandPermission(sender, "Designated-GUI", true)) {
                     for (int month = 1;month <= 12;month++) {
@@ -52,7 +52,7 @@ public class GUICommand
                             }
                             Menu.openGUI(player, month);
                             placeholders.put("{month}", String.valueOf(month));
-                            MessageUtil.sendCommandMessage(player, "GUI.Normal", placeholders);
+//                            MessageUtil.sendCommandMessage(player, "GUI.Normal", placeholders);
                             return;
                         }
                     }
@@ -98,7 +98,7 @@ public class GUICommand
                     Menu.openGUI(player, month, year);
                     placeholders.put("{month}", String.valueOf(month));
                     placeholders.put("{year}", String.valueOf(year));
-                    MessageUtil.sendCommandMessage(player, "GUI.Specified-Year", placeholders);
+//                    MessageUtil.sendCommandMessage(player, "GUI.Specified-Year", placeholders);
                 }
             }
         }
