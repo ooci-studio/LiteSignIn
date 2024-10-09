@@ -100,13 +100,14 @@ public class SQLiteEngine
     public int executeUpdate(String sqlSyntax, String... values) {
         try {
             checkConnection();
-            PreparedStatement statement = sqliteConnection.prepareStatement(sqlSyntax);
-            int number = 0;
-            for (String value : values) {
-                number++;
-                statement.setString(number, value);
+            try (PreparedStatement statement = sqliteConnection.prepareStatement(sqlSyntax)) {
+                int number = 0;
+                for (String value : values) {
+                    number++;
+                    statement.setString(number, value);
+                }
+                return statement.executeUpdate();
             }
-            return statement.executeUpdate();
         } catch (SQLException ex) {
             throwSQLException(ex, "ExecuteUpdateFailed", true);
             return 0;
@@ -117,22 +118,23 @@ public class SQLiteEngine
     public int[] executeMultiQueries(String sqlSyntax, List<Map<Integer, String>> parameters) {
         try {
             checkConnection();
-            PreparedStatement statement = sqliteConnection.prepareStatement(sqlSyntax);
-            for (Map<Integer, String> parameter : parameters) {
-                for (int id : parameter.keySet()) {
-                    statement.setString(id, parameter.get(id));
+            try (PreparedStatement statement = sqliteConnection.prepareStatement(sqlSyntax)) {
+                for (Map<Integer, String> parameter : parameters) {
+                    for (int id : parameter.keySet()) {
+                        statement.setString(id, parameter.get(id));
+                    }
+                    statement.addBatch();
                 }
-                statement.addBatch();
+                return statement.executeBatch();
             }
-            return statement.executeBatch();
         } catch (SQLException ex) {
             throwSQLException(ex, "ExecuteUpdateFailed", true);
             return new int[0];
         }
     }
-
+    
     @Override
-    public ResultSet executeQuery(String sqlSyntax, String... values) {
+    public SQLQuery executeQuery(String sqlSyntax, String... values) {
         try {
             checkConnection();
             PreparedStatement statement = sqliteConnection.prepareStatement(sqlSyntax);
@@ -141,7 +143,7 @@ public class SQLiteEngine
                 number++;
                 statement.setString(number, value);
             }
-            return statement.executeQuery();
+            return new SQLQuery(statement.executeQuery(), statement);
         } catch (SQLException ex) {
             throwSQLException(ex, "ExecuteQueryFailed", true);
             return null;
@@ -172,11 +174,12 @@ public class SQLiteEngine
     public void initialize() {
         try {
             checkConnection();
-            Statement statement = sqliteConnection.createStatement();
-            for (DatabaseTable table : DatabaseTable.values()) {
-                statement.addBatch(table.getCreateTableSyntax(DatabaseType.SQLITE));
+            try (Statement statement = sqliteConnection.createStatement()) {
+                for (DatabaseTable table : DatabaseTable.values()) {
+                    statement.addBatch(table.getCreateTableSyntax(DatabaseType.SQLITE));
+                }
+                statement.executeBatch();
             }
-            statement.executeBatch();
         } catch (SQLException ex) {
             throwSQLException(ex, "InitializationFailed", true);
         }
